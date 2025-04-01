@@ -1,0 +1,86 @@
+/* Profile.css */
+
+/* Page Wrapper */
+.profile-page {
+    background-color: #f5f6fa;
+    min-height: 100vh;
+  }
+  
+  /* Left Card (User Profile Card) */
+  .profile-card {
+    border: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .profile-image-wrapper {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto;
+    border-radius: 50%;
+    overflow: hidden;
+  }
+  
+  .profile-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .profile-name {
+    text-align: center;
+    margin-bottom: 4px;
+  }
+  
+  .profile-member-info {
+    text-align: center;
+    font-size: 0.9rem;
+    color: #888;
+    margin-bottom: 0.25rem;
+  }
+  
+  /* Right Card (Edit Profile) */
+  .edit-profile-card {
+    border: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .edit-profile-card h3 {
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+  }
+  
+  .section-title {
+    font-weight: 600;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 0.5rem;
+  }
+  
+  /* Form Labels */
+  .card-body label {
+    font-weight: 500;
+    margin-bottom: 0.4rem;
+  }
+  
+  /* Buttons */
+  button[type="submit"] {
+    padding: 10px 30px;
+    font-size: 1rem;
+  }
+  
+  .profile-card button,
+  .edit-profile-card button {
+    border-radius: 4px;
+  }
+  
+  /* Responsive */
+  @media (max-width: 768px) {
+    .profile-image-wrapper {
+      width: 100px;
+      height: 100px;
+    }
+    .profile-member-info {
+      font-size: 0.8rem;
+    }
+  }
+  
