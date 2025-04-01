@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import Profile from "./pages/Profile";
 import Auth from "./pages/Auth";
-import "./App.css";
+
 
 
 function App() {
@@ -19,7 +19,7 @@ function App() {
   return (
     <Router>
       <div className="app-container">
-        <h1>Conduit App</h1>
+       
         <Navbar user={user} setUser={setUser} />
         <Routes>
           <Route path="/register" element={<Auth setUser={setUser} />} />
@@ -37,15 +37,16 @@ const Navbar = ({ user, setUser }) => {
     localStorage.removeItem("token");
     localStorage.removeItem("username");
     setUser(null);
+
   };
 
   return (
     <nav>
       {user ? (
         <>
-          <span>Xin chào, {user}!</span>
+          {/* <span>Xin chào, {user}!</span>
           <Link to="/profile">Profile</Link>
-          <button onClick={handleLogout}>Logout</button>
+          <button onClick={handleLogout}>Logout</button> */}
         </>
       ) : (
         <>
