@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { registerUser, loginUser } from "../api";
 import { useNavigate } from "react-router-dom";
-import "./Auth.css";  // Thêm file CSS để quản lý style
+import * as yup from "yup";  // Import yup
+import "./Auth.css";
 
 const Auth = ({ setUser }) => {
   const [isLogin, setIsLogin] = useState(true);
@@ -11,24 +12,24 @@ const Auth = ({ setUser }) => {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  const validateInput = () => {
-    if (!email.trim()) return "Vui lòng nhập email.";
-    if (!/\S+@\S+\.\S+/.test(email)) return "Email không hợp lệ.";
-    if (!password.trim()) return "Vui lòng nhập mật khẩu.";
-    if (password.length < 3) return "Mật khẩu phải có ít nhất 3 ký tự.";
-    if (!isLogin && !username.trim()) return "Vui lòng nhập tên người dùng.";
-    if (!isLogin && username.length < 3) return "Tên người dùng phải có ít nhất 3 ký tự.";
-    return null;
-  };
+  // Schema validation bằng yup
+  const loginSchema = yup.object().shape({
+    email: yup.string().email("Email không hợp lệ.").required("Vui lòng nhập email."),
+    password: yup.string().min(3, "Mật khẩu phải có ít nhất 3 ký tự.").required("Vui lòng nhập mật khẩu."),
+  });
+
+  const registerSchema = yup.object().shape({
+    username: yup.string().min(3, "Tên người dùng phải có ít nhất 3 ký tự.").required("Vui lòng nhập tên người dùng."),
+    email: yup.string().email("Email không hợp lệ.").required("Vui lòng nhập email."),
+    password: yup.string().min(3, "Mật khẩu phải có ít nhất 3 ký tự.").required("Vui lòng nhập mật khẩu."),
+  });
 
   const handleSubmit = async () => {
-    const validationError = validateInput();
-    if (validationError) {
-      setError(validationError);
-      return;
-    }
-
     try {
+      const schema = isLogin ? loginSchema : registerSchema;
+      await schema.validate({ username, email, password }, { abortEarly: false });
+      setError(null); // Xóa lỗi trước khi gửi request
+
       if (isLogin) {
         const response = await loginUser({ email, password });
         const { token, username } = response.data.user;
@@ -37,17 +38,30 @@ const Auth = ({ setUser }) => {
         localStorage.setItem("username", username);
         setUser(username);
 
-        navigate("/home");
+        navigate("/profile");
       } else {
         await registerUser({ username, email, password });
         setIsLogin(true);
       }
-      setError(null);
     } catch (err) {
-      const apiError = err.response?.data?.errors || {};
-      const errorMessage = apiError.email?.[0] || apiError.password?.[0] || apiError.username?.[0] || "Đã có lỗi xảy ra!";
-      setError(errorMessage);
+      if (err.name === "ValidationError") {
+        // Lỗi từ yup
+        const messages = err.errors.join(" ");
+        setError(messages);
+      } else {
+        // Lỗi từ API
+        console.log("Lỗi từ API:", err.response?.data);
+        const apiError = err.response?.data?.errors || {};
+        const errorMessage =
+          apiError.email ||
+          apiError.username ||
+          apiError.password ||
+          "Đã có lỗi xảy ra!";
+        setError(errorMessage);
+      }
     }
+    
+    
   };
 
   return (

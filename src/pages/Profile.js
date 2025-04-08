@@ -29,7 +29,7 @@ const Profile = () => {
         setUser(data);
         setUsername(data.username || "");
         setBio(data.bio || "");
-        setImage(data.image || "");
+        setImage(data.image || "https://i.pinimg.com/236x/e6/60/85/e66085932a4b3b411854aff54574ecd6.jpg");
         setIsLoggedIn(true);
       } catch (err) {
         setError("Không thể tải thông tin người dùng");
