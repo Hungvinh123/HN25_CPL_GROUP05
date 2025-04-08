@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { getCurrentUser, updateUser } from "../api";
 import { useNavigate } from "react-router-dom";
-import { Container, Row, Col, Card, Form, Button } from "react-bootstrap";
-import 'bootstrap/dist/css/bootstrap.min.css';
+import { Container, Row, Col, Form, Button, Card } from "react-bootstrap";
+import "./Profile.css"; // Import custom CSS
+import "bootstrap/dist/css/bootstrap.min.css";
 
 const Profile = () => {
   const [user, setUser] = useState(null);
@@ -11,8 +12,10 @@ const Profile = () => {
   const [image, setImage] = useState("");
   const [error, setError] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("token"));
+
   const navigate = useNavigate();
 
+  // Fetch user data on mount
   useEffect(() => {
     const fetchUser = async () => {
       const token = localStorage.getItem("token");
@@ -22,10 +25,11 @@ const Profile = () => {
       }
       try {
         const response = await getCurrentUser(token);
-        setUser(response.data.user);
-        setUsername(response.data.user.username || "");
-        setBio(response.data.user.bio || "");
-        setImage(response.data.user.image || "");
+        const data = response.data.user;
+        setUser(data);
+        setUsername(data.username || "");
+        setBio(data.bio || "");
+        setImage(data.image || "");
         setIsLoggedIn(true);
       } catch (err) {
         setError("Không thể tải thông tin người dùng");
@@ -36,15 +40,22 @@ const Profile = () => {
     fetchUser();
   }, []);
 
+  // Chỉ cập nhật 3 trường: username, bio, image
   const handleUpdate = async (e) => {
     e.preventDefault();
     try {
       const token = localStorage.getItem("token");
       const updatedUser = { username, bio, image };
+
       const response = await updateUser(token, updatedUser);
-      setUser(response.data.user);
-      setError(null);
+      if (response.status === 200) {
+        setUser(response.data.user);
+        setError(null);
+      } else {
+        setError("Cập nhật thất bại!");
+      }
     } catch (err) {
+      console.error("Update failed!", err);
       setError("Cập nhật thất bại!");
     }
   };
@@ -65,88 +76,80 @@ const Profile = () => {
       </Container>
     );
   }
-console.log(user);
+
   return (
-    <Container className="bg-white mt-5 mb-5 rounded shadow p-4">
-      <Row>
-        {/* Cột Avatar */}
-        <Col md={3} className="border-end text-center">
-          <div className="p-3 py-5">
-            <img
-              src={user?.image || "https://via.placeholder.com/150"}
-              alt="avatar"
-              className="rounded-circle mt-3 shadow"
-              width="150px"
-              height="150px"
-              style={{ objectFit: "cover" }}
-            />
-            <h5 className="mt-3">{user?.username}</h5>
-            <p className="text-muted">{user?.email}</p>
-            <Button variant="danger" className="mt-2" onClick={handleLogout}>
-              Đăng xuất
-            </Button>
-          </div>
+    <Container fluid className="profile-page py-5">
+      <Row className="justify-content-center">
+        {/* Left Column: Profile Card */}
+        <Col md={3} className="mb-4">
+          <Card className="profile-card">
+            <Card.Body className="text-center">
+              <div className="profile-image-wrapper">
+                <img
+                  src={image || "https://via.placeholder.com/150"}
+                  alt="User Avatar"
+                  className="profile-image"
+                />
+              </div>
+              <h5 className="profile-name mt-3">
+                {username || "No Username"}
+              </h5>
+              <Button variant="outline-secondary" size="sm" className="mt-2">
+                Upload New Photo
+              </Button>
+              <Button
+                variant="outline-danger"
+                size="sm"
+                className="mt-2 d-block"
+                onClick={handleLogout}
+              >
+                Đăng xuất
+              </Button>
+            </Card.Body>
+          </Card>
         </Col>
 
-        {/* Cột Form Cập Nhật */}
-        <Col md={5} className="border-end">
-          <div className="p-3 py-5">
-            <h4 className="mb-4">Cài đặt hồ sơ</h4>
-            {error && <p className="text-danger">{error}</p>}
-
-            <Form onSubmit={handleUpdate}>
-              <Row className="mb-3">
-                <Col md={6}>
-                  <Form.Label className="fw-bold">Tên</Form.Label>
+        {/* Right Column: Edit Profile Form */}
+        <Col md={8}>
+          <Card className="edit-profile-card">
+            <Card.Body>
+              <h3 className="mb-4">Edit Profile</h3>
+              <Form onSubmit={handleUpdate}>
+                {error && <p className="text-danger">{error}</p>}
+                <Form.Group className="mb-3">
+                  <Form.Label>Username</Form.Label>
                   <Form.Control
                     type="text"
+                    placeholder="Username"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    placeholder="Nhập tên mới"
                   />
-                </Col>
-                <Col md={6}>
-                  <Form.Label className="fw-bold">Giới thiệu</Form.Label>
+                </Form.Group>
+                <Form.Group className="mb-3">
+                  <Form.Label>Bio</Form.Label>
                   <Form.Control
                     as="textarea"
-                    rows={2}
+                    rows={3}
+                    placeholder="Nhập giới thiệu"
                     value={bio}
                     onChange={(e) => setBio(e.target.value)}
-                    placeholder="Nhập giới thiệu"
                   />
-                </Col>
-              </Row>
-
-              <Form.Group className="mb-3">
-                <Form.Label className="fw-bold">Ảnh đại diện (URL)</Form.Label>
-                <Form.Control
-                  type="text"
-                  value={image}
-                  onChange={(e) => setImage(e.target.value)}
-                  placeholder="Dán đường dẫn ảnh"
-                />
-              </Form.Group>
-
-              <Button variant="primary" type="submit">
-                Lưu thay đổi
-              </Button>
-            </Form>
-          </div>
-        </Col>
-
-        {/* Cột Kinh Nghiệm */}
-        <Col md={4}>
-          <div className="p-3 py-5">
-            <h4 className="mb-3">Kinh nghiệm</h4>
-            <Form.Group className="mb-3">
-              <Form.Label className="fw-bold">Lĩnh vực</Form.Label>
-              <Form.Control type="text" placeholder="Nhập lĩnh vực chuyên môn" />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label className="fw-bold">Chi tiết khác</Form.Label>
-              <Form.Control type="text" placeholder="Thêm chi tiết bổ sung" />
-            </Form.Group>
-          </div>
+                </Form.Group>
+                <Form.Group className="mb-3">
+                  <Form.Label>Profile Image (URL)</Form.Label>
+                  <Form.Control
+                    type="text"
+                    placeholder="Dán đường dẫn ảnh"
+                    value={image}
+                    onChange={(e) => setImage(e.target.value)}
+                  />
+                </Form.Group>
+                <Button variant="danger" type="submit" className="mt-3">
+                  Update Info
+                </Button>
+              </Form>
+            </Card.Body>
+          </Card>
         </Col>
       </Row>
     </Container>
