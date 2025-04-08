@@ -37,7 +37,7 @@ const Auth = ({ setUser }) => {
         localStorage.setItem("username", username);
         setUser(username);
 
-        navigate("/profile");
+        navigate("/home");
       } else {
         await registerUser({ username, email, password });
         setIsLogin(true);
