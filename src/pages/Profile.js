@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Container, Row, Col, Form, Button, Card } from "react-bootstrap";
 import "./Profile.css"; // Import custom CSS
 import "bootstrap/dist/css/bootstrap.min.css";
-
+import Header from "../pages/Header";
 const Profile = () => {
   const [user, setUser] = useState(null);
   const [username, setUsername] = useState("");
@@ -78,7 +78,9 @@ const Profile = () => {
   }
 
   return (
-    <Container fluid className="profile-page py-5">
+    <>
+    <Header />
+    <Container fluid className="profile-page py-5 mt-5">
       <Row className="justify-content-center">
         {/* Left Column: Profile Card */}
         <Col md={3} className="mb-4">
@@ -153,6 +155,7 @@ const Profile = () => {
         </Col>
       </Row>
     </Container>
+    </>
   );
 };
 
