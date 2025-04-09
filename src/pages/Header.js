@@ -29,7 +29,7 @@ const Header = () => {
                                 Your Articles
                             </Link>
                             <Link to={`/profile`} className="nav-item">
-                                Profile
+                                {localStorage.getItem("username")}
                             </Link>
                             <button onClick={handleLogout} className="nav-item logout-btn">
                                 Logout
