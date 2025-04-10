@@ -32,6 +32,7 @@ function App() {
           <Route path="/article/:slug" element={<ArticleDetail />} />
           <Route path="/editor/:slug" element={<EditArticlePage />} />
           <Route path="/new-article" element={<NewArticle />} />
+          <Route path="/profiles/:username?" element={<Profile />} />
         </Routes>
       </div>
     </Router>

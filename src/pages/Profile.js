@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { getCurrentUser, updateUser } from "../api";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { Container, Row, Col, Form, Button, Card } from "react-bootstrap";
 import "./Profile.css"; // Import custom CSS
 import "bootstrap/dist/css/bootstrap.min.css";
 import Header from "../pages/Header";
+import { getProfile } from "../api"; // new import
+import FollowButton from "./Follow"; // new import
+import Notification from './Notification'; // new import
+
 const Profile = () => {
   const [user, setUser] = useState(null);
   const [username, setUsername] = useState("");
@@ -12,8 +16,13 @@ const Profile = () => {
   const [image, setImage] = useState("");
   const [error, setError] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("token"));
+  const [notification, setNotification] = useState(null); // new import
+  const [profile, setProfile] = useState(null); //new import
+  const [isFollowing, setIsFollowing] = useState(false); //new import
+  const [isOwnProfile, setIsOwnProfile] = useState(true); //new import
 
   const navigate = useNavigate();
+  const { username: profileUsername } = useParams(); //new import
 
   // Fetch user data on mount
   useEffect(() => {
@@ -24,6 +33,7 @@ const Profile = () => {
         return;
       }
       try {
+        if (!profileUsername) {
         const response = await getCurrentUser(token);
         const data = response.data.user;
         setUser(data);
@@ -31,6 +41,17 @@ const Profile = () => {
         setBio(data.bio || "");
         setImage(data.image || "https://i.pinimg.com/236x/e6/60/85/e66085932a4b3b411854aff54574ecd6.jpg");
         setIsLoggedIn(true);
+      } else {
+        // Viewing another user's profile
+        const currentUserResponse = await getCurrentUser(token);
+        setUser(currentUserResponse.data.user);
+        
+        const profileResponse = await getProfile(profileUsername, token);
+        setProfile(profileResponse.data.profile);
+        setIsFollowing(profileResponse.data.profile.following);
+        setIsOwnProfile(false);
+        setIsLoggedIn(true);
+      }
       } catch (err) {
         setError("Không thể tải thông tin người dùng");
         setIsLoggedIn(false);
@@ -77,25 +98,50 @@ const Profile = () => {
     );
   }
 
+  
+ 
+
   return (
     <>
     <Header />
     <Container fluid className="profile-page py-5 mt-5">
+    {notification && (
+        <Notification 
+        message={notification.message}
+        type={notification.type}
+        onClose={() => setNotification(null)}
+        />
+      )}
       <Row className="justify-content-center">
         {/* Left Column: Profile Card */}
         <Col md={3} className="mb-4">
           <Card className="profile-card">
             <Card.Body className="text-center">
-              <div className="profile-image-wrapper">
-                <img
-                  src={image || "https://via.placeholder.com/150"}
-                  alt="User Avatar"
-                  className="profile-image"
+            <div className="profile-image-wrapper">
+    <img
+      src={
+        (isOwnProfile ? user?.image : profile?.image) ||
+        "https://i.pinimg.com/236x/e6/60/85/e66085932a4b3b411854aff54574ecd6.jpg"
+      }
+      alt="User Avatar"
+      className="profile-image"
+    />
+  </div>
+  <h5 className="profile-name mt-3">
+    {isOwnProfile ? user?.username : profile?.username || "No Username"}
+  </h5>
+              
+              {!isOwnProfile && (    // new import
+                <FollowButton 
+                  profile={profile}
+                  isFollowing={isFollowing}
+                  setIsFollowing={setIsFollowing}
+                  setError={setError}
+                  setProfile={setProfile}
+                  setNotification={setNotification}
                 />
-              </div>
-              <h5 className="profile-name mt-3">
-                {username || "No Username"}
-              </h5>
+              )} {isOwnProfile && (
+              <>
               <Button variant="outline-secondary" size="sm" className="mt-2">
                 Upload New Photo
               </Button>
@@ -107,6 +153,8 @@ const Profile = () => {
               >
                 Đăng xuất
               </Button>
+              </>
+              )}
             </Card.Body>
           </Card>
         </Col>
@@ -115,6 +163,8 @@ const Profile = () => {
         <Col md={8}>
           <Card className="edit-profile-card">
             <Card.Body>
+            {isOwnProfile ? (
+                <>
               <h3 className="mb-4">Edit Profile</h3>
               <Form onSubmit={handleUpdate}>
                 {error && <p className="text-danger">{error}</p>}
@@ -150,6 +200,21 @@ const Profile = () => {
                   Update Info
                 </Button>
               </Form>
+              </>
+              ) : ( //new import
+                <>
+                  <h3 className="mb-4">Profile Information</h3>
+                  {error && <p className="text-danger">{error}</p>}
+                  <div className="mb-3">
+                    <h5>Username</h5>
+                    <p>{profile.username}</p>
+                  </div>
+                  <div className="mb-3">
+                    <h5>Bio</h5>
+                    <p>{profile.bio || "No bio yet"}</p>
+                  </div>
+                </>
+              )}  
             </Card.Body>
           </Card>
         </Col>

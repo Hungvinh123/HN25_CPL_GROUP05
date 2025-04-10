@@ -25,3 +25,25 @@ export const updateUser = async (token, userData) => {
     }
   );
 };
+
+export const getProfile = async (username, token) => {
+  return axios.get(`${API_URL}/profiles/${username}`, {
+    headers: { Authorization: `Token ${token}` },
+  });
+};
+
+export const followUser = async (username, token) => {
+  return axios.post(
+    `${API_URL}/profiles/${username}/follow`,
+    {},
+    {
+      headers: { Authorization: `Token ${token}` },
+    }
+  );
+};
+
+export const unfollowUser = async (username, token) => {
+  return axios.delete(`${API_URL}/profiles/${username}/follow`, {
+    headers: { Authorization: `Token ${token}` },
+  });
+};
