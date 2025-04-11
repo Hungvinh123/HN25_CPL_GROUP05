@@ -1,7 +1,6 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import "./Home.css";
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom"; //new import
+import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import Header from "../pages/Header";
 
@@ -12,7 +11,7 @@ const Home = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate(); //new import
+  const navigate = useNavigate();
   const limit = 10;
   const tagLimit = 30;
 
@@ -20,14 +19,14 @@ const Home = () => {
     setIsLoading(true);
     try {
       const baseUrl = "https://node-express-conduit.appspot.com/api";
-      const response = await axios.get(
-        `${baseUrl}/articles?limit=${limit}&offset=${(page - 1) * 10}${tag && `&tag=${tag}`}`
-      );
+      const url = `${baseUrl}/articles?limit=${limit}&offset=${(page - 1) * limit}${tag ? `&tag=${tag}` : ""}`;
+      const response = await axios.get(url);
 
       if (response.status === 200) {
-        const sortedArticles = response.data.articles.sort((a, b) => 
-          new Date(b.createdAt) - new Date(a.createdAt));
-        setArticles(response.data.articles);
+        const sortedArticles = response.data.articles.sort(
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+        );
+        setArticles(sortedArticles);
         setTotalPages(Math.ceil(response.data.articlesCount / limit));
       }
     } catch (e) {
@@ -63,7 +62,7 @@ const Home = () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        alert("Khong co token");
+        alert("Không có token");
         return;
       }
       const response = await axios.post(
@@ -76,16 +75,15 @@ const Home = () => {
         }
       );
       if (response.status === 200) {
-        const newArticles = articles.map((article) => {
-          if (article?.slug === slug) {
-            return {
+        const newArticles = articles.map((article) =>
+          article?.slug === slug
+            ? {
               ...article,
               favorited: !article.favorited,
               favoritesCount: article.favoritesCount + (article.favorited ? -1 : 1),
-            };
-          }
-          return article;
-        });
+            }
+            : article
+        );
         setArticles(newArticles);
       }
     } catch (e) {
@@ -110,14 +108,19 @@ const Home = () => {
             {isLoading ? (
               <div>Đang tải bài viết...</div>
             ) : articles.length > 0 ? (
-              articles?.map((article) => (
+              articles.map((article) => (
                 <article className="article-card" key={article?.slug}>
                   <div className="article-meta">
-                  <img src={article?.author?.image} alt="Author" className="author-image"
-                      onClick={() => navigate(`/profiles/${article?.author?.username}`)} />
+                    <img
+                      src={article?.author?.image}
+                      alt="Author"
+                      className="author-image"
+                      onClick={() => navigate(`/profiles/${article?.author?.username}`)}
+                    />
                     <div className="author-info">
-                    <p onClick={() => navigate(`/profiles/${article?.author?.username}`)}>
-                    {article?.author?.username}</p>
+                      <p onClick={() => navigate(`/profiles/${article?.author?.username}`)}>
+                        {article?.author?.username}
+                      </p>
                       <span>
                         {new Date(article?.createdAt).toLocaleDateString("en-US", {
                           year: "numeric",
@@ -136,34 +139,41 @@ const Home = () => {
                   <div className="article-content">
                     <h2>{article?.title}</h2>
                     <p>{article?.description}</p>
-                    <a href="#" className="read-more">
+                    <Link
+                      to={`/article/${article.slug}`}
+                      style={{
+                        color: "#5CB85C",
+                        cursor: "pointer",
+                        textDecoration: "none",
+                      }}
+                    >
                       Read more...
-                    </a>
+                    </Link>
                   </div>
                 </article>
               ))
             ) : (
-              "Không có bài viết nào"
+              <div>Không có bài viết nào.</div>
             )}
           </main>
 
           <aside className="sidebar">
             <div className="popular-tags">
-                <h3>Popular Tags</h3>
+              <h3>Popular Tags</h3>
               <div className="tags-container">
                 {tags.length > 0 &&
-                  tags?.map(
-                    (tag, index) =>
-                      index <= tagLimit && (
+                  tags.map(
+                    (tagItem, index) =>
+                      index < tagLimit && (
                         <span
                           className="tag"
                           onClick={() => {
-                            setTag(tag);
+                            setTag(tagItem);
                             setPage(1);
                           }}
                           key={index}
                         >
-                          {tag}
+                          {tagItem}
                         </span>
                       )
                   )}

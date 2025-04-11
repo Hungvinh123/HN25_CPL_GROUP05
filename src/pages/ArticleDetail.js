@@ -1,107 +1,170 @@
-import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
-import axios from "axios";
+// ArticleDetail.js
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate, Link, useLocation } from "react-router-dom";
+import { postComment } from "./PostComment";
+import { postReply } from "./PostReply";
+import { groupComments } from "./GroupComments";
+import { RenderComments } from "./RenderComments";
+import Header from "./Header";
 
-// CSS tùy chỉnh
-const styles = `
-  .article-detail {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 30px 20px;
-  }
-  .article-title {
-    font-size: 2rem;
-    font-weight: 700;
-    margin-bottom: 10px;
-    color: #333;
-  }
-  .article-meta {
-    font-size: 0.9rem;
-    color: #6c757d;
-    margin-bottom: 20px;
-  }
-  .article-description {
-    font-size: 1.1rem;
-    color: #555;
-    margin-bottom: 20px;
-    font-style: italic;
-  }
-  .article-body {
-    font-size: 1rem;
-    line-height: 1.6;
-    color: #444;
-    margin-bottom: 30px;
-  }
-  .back-button {
-    display: inline-block;
-    padding: 10px 20px;
-    background-color: #007bff;
-    color: #fff;
-    text-decoration: none;
-    border-radius: 5px;
-    transition: background-color 0.3s;
-  }
-  .back-button:hover {
-    background-color: #0056b3;
-    color: #fff;
-  }
-`;
+const BASE_API = "https://node-express-conduit.appspot.com/api";
 
 const ArticleDetail = () => {
+    const { slug } = useParams();
+    const navigate = useNavigate();
+    const location = useLocation();
+
     const [article, setArticle] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const { slug } = useParams(); // Lấy slug từ URL
+    const [comments, setComments] = useState([]);
+    const [comment, setComment] = useState("");
+    const [replyingTo, setReplyingTo] = useState(null);
+    const [replyText, setReplyText] = useState("");
+    const [userToken, setUserToken] = useState(localStorage.getItem("token"));
+    const [currentUser, setCurrentUser] = useState(localStorage.getItem("username"));
+    const [hoveredComment, setHoveredComment] = useState(null);
 
     useEffect(() => {
-        const fetchArticle = async () => {
-            try {
-                setLoading(true);
-                const response = await axios.get(
-                    `https://node-express-conduit.appspot.com/api/articles/${slug}`
-                );
-                setArticle(response.data.article); // Lưu thông tin bài viết
-                setLoading(false);
-            } catch (error) {
-                console.error("Lỗi khi lấy chi tiết bài viết:", error);
-                setLoading(false);
-            }
-        };
+        fetch(`${BASE_API}/articles/${slug}`)
+            .then(res => res.json())
+            .then(data => setArticle(data.article))
+            .catch(err => console.error("Error fetching article:", err));
 
-        fetchArticle();
-    }, [slug]); // Chạy lại khi slug thay đổi
+        fetch(`${BASE_API}/articles/${slug}/comments`)
+            .then(res => res.json())
+            .then(data => setComments(data.comments))
+            .catch(err => console.error("Error fetching comments:", err));
+    }, [slug]);
 
-    if (loading) {
-        return <div>Đang tải...</div>;
-    }
+    useEffect(() => {
+        setUserToken(localStorage.getItem("token"));
+        setCurrentUser(localStorage.getItem("username"));
+    }, [location]);
 
-    if (!article) {
-        return <div>Không tìm thấy bài viết!</div>;
-    }
+    const handleCommentSubmit = async (e) => {
+        e.preventDefault();
+        if (!userToken) {
+            navigate("/login", { state: { returnUrl: `/article/${slug}` } });
+            return;
+        }
+
+        try {
+            await postComment({ slug, comment, userToken, setComments, setComment, comments });
+        } catch (err) {
+            console.error("Error posting comment:", err);
+        }
+    };
+
+    const handleReplySubmit = async (e, parentId) => {
+        e.preventDefault();
+        if (!replyText.trim()) return;
+
+        try {
+            await postReply({ slug, replyText, parentId, comments, userToken, setComments, setReplyText, setReplyingTo });
+        } catch (err) {
+            console.error("Error posting reply:", err);
+        }
+    };
+
+    if (!article) return <p>Loading article...</p>;
+
+    const { roots, map: childrenMap } = groupComments(comments);
 
     return (
         <>
-            {/* Thêm CSS tùy chỉnh vào trang */}
-            <style>{styles}</style>
-            <div className="article-detail">
-                <h1 className="article-title">{article.title}</h1>
-                <p className="article-meta">
-                    Bởi {article.author.username} vào ngày{" "}
-                    {new Date(article.createdAt).toLocaleDateString()}
-                </p>
-                {article.description && (
-                    <p className="article-description">{article.description}</p>
-                )}
-                <div className="article-body">
-                    <p>{article.body}</p> {/* Hiển thị nội dung đầy đủ của bài viết */}
+            <div>
+                <Header />
+            </div>
+            <div className="banner">
+                <h1>conduit</h1>
+                <p>A place to share your knowledge.</p>
+            </div>
+
+
+
+            <div style={{ display: "flex", alignItems: "center", marginBottom: "10px" }}>
+                <img
+                    src={article.author.image}
+                    alt={article.author.username}
+                    style={{
+                        width: "40px",
+                        height: "40px",
+                        borderRadius: "50%",
+                        marginRight: "10px",
+                    }}
+                />
+                <div>
+                    <strong style={{ color: "#5CB85C" }}>{article.author.username}</strong>
+                    <p style={{ margin: 0, fontSize: "12px", color: "#bbb" }}>
+                        {new Date(article.createdAt).toDateString()}
+                    </p>
                 </div>
-                <ul>
-                    {article.tagList.map((tag, index) => (
-                        <li key={index} className="badge bg-primary mr-2">{tag}</li>
-                    ))}
-                </ul>
-                <Link to={`/article-user`} className="back-button">
-                    Quay lại danh sách bài viết
-                </Link>
+            </div>
+            <div style={{ paddingBottom: "20px", borderBottom: "1px solid #ccc" }}>
+                <h1>{article.title}</h1>
+                <p>{article.description}</p>
+                <p>{article.body}</p>
+            </div>
+
+            <div style={{ marginTop: "20px" }}>
+                <h3>Bình luận</h3>
+
+                {userToken ? (
+                    <form onSubmit={handleCommentSubmit} style={{ marginBottom: "20px" }}>
+                        <textarea
+                            value={comment}
+                            onChange={(e) => setComment(e.target.value)}
+                            placeholder="Thêm bình luận..."
+                            style={{
+                                width: "100%",
+                                height: "60px",
+                                padding: "10px",
+                                borderRadius: "5px",
+                                border: "1px solid #ddd"
+                            }}
+                        />
+                        <button
+                            type="submit"
+                            style={{
+                                marginTop: "10px",
+                                padding: "10px 15px",
+                                backgroundColor: "#5CB85C",
+                                color: "white",
+                                border: "none",
+                                borderRadius: "5px",
+                                cursor: "pointer"
+                            }}
+                        >
+                            Đăng
+                        </button>
+                    </form>
+                ) : (
+                    <p><Link to="/login" state={{ returnUrl: `/article/${slug}` }}>Đăng nhập</Link> để bình luận.</p>
+                )}
+
+                {roots.length > 0 ? (
+                    roots.map(comment => (
+                        <RenderComments
+                            key={comment.id}
+                            comment={comment}
+                            level={0}
+                            childrenMap={childrenMap}
+                            currentUser={currentUser}
+                            userToken={userToken}
+                            replyingTo={replyingTo}
+                            setReplyingTo={setReplyingTo}
+                            replyText={replyText}
+                            setReplyText={setReplyText}
+                            handleReplySubmit={handleReplySubmit}
+                            setHoveredComment={setHoveredComment}
+                            hoveredComment={hoveredComment}
+                            slug={slug}
+                            comments={comments}
+                            setComments={setComments}
+                        />
+                    ))
+                ) : (
+                    <p>Chưa có bình luận nào.</p>
+                )}
             </div>
         </>
     );
