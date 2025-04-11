@@ -8,6 +8,7 @@ import Header from "../pages/Header";
 import { getProfile } from "../api"; // new import
 import FollowButton from "./Follow"; // new import
 import Notification from './Notification'; // new import
+import axios from "axios";
 
 const Profile = () => {
   const [user, setUser] = useState(null);
@@ -20,9 +21,38 @@ const Profile = () => {
   const [profile, setProfile] = useState(null); //new import
   const [isFollowing, setIsFollowing] = useState(false); //new import
   const [isOwnProfile, setIsOwnProfile] = useState(true); //new import
+  const [articles, setArticles] = useState([]);
+  const [articlesLoading, setArticlesLoading] = useState(false);
 
   const navigate = useNavigate();
   const { username: profileUsername } = useParams(); //new import
+
+  //new import
+  useEffect(() => {
+    const fetchUserArticles = async () => {
+      setArticlesLoading(true);
+      try {
+        const usernameToFetch = isOwnProfile ? user?.username : profile?.username;
+        if (!usernameToFetch) return;
+
+        const response = await axios.get(
+          `https://node-express-conduit.appspot.com/api/articles?author=${usernameToFetch}&order=desc`
+        );
+        
+        const sortedArticles = response.data.articles.sort((a, b) => 
+          new Date(b.createdAt) - new Date(a.createdAt)
+        );
+        
+        setArticles(sortedArticles);
+      } catch (err) {
+        setError("Không thể tải bài viết");
+      } finally {
+        setArticlesLoading(false);
+      }
+    };
+
+    fetchUserArticles();
+  }, [isOwnProfile, user?.username, profile?.username]);
 
   // Fetch user data on mount
   useEffect(() => {
@@ -219,6 +249,59 @@ const Profile = () => {
           </Card>
         </Col>
       </Row>
+      <Row className="mt-4 justify-content-center">
+          <Col md={11}>
+            <Card className="articles-card">
+              <Card.Body>
+                <h4 className="mb-4">Bài viết gần đây</h4>
+                {articlesLoading ? (
+                  <div className="text-center">Đang tải bài viết...</div>
+                ) : articles.length > 0 ? (
+                  articles.map(article => (
+                    <div key={article.slug} className="mb-4 article-item">
+                      <div className="d-flex justify-content-between align-items-start">
+                        <div>
+                          <h5>
+                            <a 
+                              href={`/article/${article.slug}`}
+                              className="text-dark text-decoration-none"
+                            >
+                              {article.title}
+                            </a>
+                          </h5>
+                          <p className="text-muted">
+                            {new Date(article.createdAt).toLocaleDateString("vi-VN", {
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric'
+                            })}
+                          </p>
+                          <p>{article.description}</p>
+                        </div>
+                        <div className="d-flex align-items-center gap-2">
+                          <span className="text-success">
+                            ♡ {article.favoritesCount}
+                          </span>
+                        </div>
+                      </div>
+                      {article.tagList?.length > 0 && (
+                        <div className="tags-container mt-2">
+                          {article.tagList.map(tag => (
+                            <span key={tag} className="tag">
+                              #{tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center">Không có bài viết nào</div>
+                )}
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
     </Container>
     </>
   );
