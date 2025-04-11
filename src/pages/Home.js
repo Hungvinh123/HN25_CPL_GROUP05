@@ -4,7 +4,7 @@ import "./Home.css";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import Header from "../pages/Header"; // Import Header component
-
+import { Link } from "react-router-dom";
 const Home = () => {
   const [articles, setArticles] = useState([]);
   const [tag, setTag] = useState("");
@@ -12,8 +12,7 @@ const Home = () => {
   const getArticles = async () => {
     try {
       const response = await axios.get(
-        `https://node-express-conduit.appspot.com/api/articles?limit=20&offset=0${
-          tag && `&tag=${tag}`
+        `https://node-express-conduit.appspot.com/api/articles?limit=200&offset=0${tag && `&tag=${tag}`
         }`
       );
       if (response.status === 200) {
@@ -79,35 +78,40 @@ const Home = () => {
           <main className="articles-section">
             {articles.length > 0
               ? articles?.map((article) => (
-                  <article className="article-card" key={article?.slug}>
-                    <div className="article-meta">
-                      <img src={article?.author?.image} alt="Author" className="author-image" />
-                      <div className="author-info">
-                        <p>{article?.author?.username}</p>
-                        <span>
-                          {new Date(article?.createdAt).toLocaleDateString("en-US", {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          })}
-                        </span>
-                      </div>
-                      <div
-                        className={`article-favorite ${article?.favorited ? "favorited  " : ""}`}
-                        onClick={() => handleFavorite(article?.slug)}
-                      >
-                        {article?.favoritesCount}
-                      </div>
+                <article className="article-card" key={article?.slug}>
+                  <div className="article-meta">
+                    <img src={article?.author?.image} alt="Author" className="author-image" />
+                    <div className="author-info">
+                      <p>{article?.author?.username}</p>
+                      <span>
+                        {new Date(article?.createdAt).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })}
+                      </span>
                     </div>
-                    <div className="article-content">
-                      <h2>{article?.title}</h2>
-                      <p>{article?.description}</p>
-                      <a href="#" className="read-more">
-                        Read more...
-                      </a>
+                    <div
+                      className={`article-favorite ${article?.favorited ? "favorited  " : ""}`}
+                      onClick={() => handleFavorite(article?.slug)}
+                    >
+                      {article?.favoritesCount}
                     </div>
-                  </article>
-                ))
+                  </div>
+                  <div className="article-content">
+                    <h2>{article?.title}</h2>
+                    <p>{article?.description}</p>
+
+                    {/* Nút "Read more" */}
+                    <Link
+                      to={`/article/${article.slug}`}
+                      style={{ color: "#5CB85C", cursor: "pointer", textDecoration: "none" }}
+                    >
+                      Read more...
+                    </Link>
+                  </div>
+                </article>
+              ))
               : "Đang tải dữ liệu"}
           </main>
 
