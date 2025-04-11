@@ -2,7 +2,7 @@ import React from "react";
 import "./Home.css";
 import { useState, useEffect } from "react";
 import axios from "axios";
-import Header from "../pages/Header"; 
+import Header from "../pages/Header";
 
 const Home = () => {
   const [articles, setArticles] = useState([]);
@@ -10,28 +10,16 @@ const Home = () => {
   const [tag, setTag] = useState("");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
-  const [activeFeed, setActiveFeed] = useState("global");
   const [isLoading, setIsLoading] = useState(false);
   const limit = 10;
   const tagLimit = 30;
 
-
   const getArticles = async () => {
     setIsLoading(true);
     try {
-      const token = localStorage.getItem("token");
       const baseUrl = "https://node-express-conduit.appspot.com/api";
-      const endpoint = activeFeed === "private" ? "/articles/feed" : "/articles";
-
       const response = await axios.get(
-        `${baseUrl}${endpoint}?limit=${limit}&offset=${(page - 1) * 10}${tag && `&tag=${tag}`}`,
-        token && activeFeed === "private"
-          ? {
-              headers: {
-                Authorization: `Token ${token}`,
-              },
-            }
-          : {}
+        `${baseUrl}/articles?limit=${limit}&offset=${(page - 1) * 10}${tag && `&tag=${tag}`}`
       );
 
       if (response.status === 200) {
@@ -46,7 +34,6 @@ const Home = () => {
       setIsLoading(false);
     }
   };
-
 
   const getTags = async () => {
     try {
@@ -66,9 +53,7 @@ const Home = () => {
   useEffect(() => {
     setTotalPages(0);
     getArticles();
-  }, [tag, page, activeFeed]);
-
-  console.log(totalPages);
+  }, [tag, page]);
 
   const handleFavorite = async (slug) => {
     try {
@@ -106,33 +91,14 @@ const Home = () => {
 
   return (
     <>
-    <Header />
+      <Header />
       <div className="banner">
         <h1>conduit</h1>
         <p>A place to share your knowledge.</p>
       </div>
       <div className="home-container">
         <div className="feed-navigation">
-          <button
-            className={`feed-btn ${activeFeed === "private" ? "active" : ""}`}
-            onClick={() => {
-              setActiveFeed("private");
-              setTag("");
-              setPage(1);
-            }}
-          >
-            Your Feed
-          </button>
-          <button
-            className={`feed-btn ${activeFeed === "global" ? "active" : ""}`}
-            onClick={() => {
-              setActiveFeed("global");
-              setTag("");
-              setPage(1);
-            }}
-          >
-            Global Feed
-          </button>
+          <button className="feed-btn active">Global Feed</button>
           {tag && <button className="feed-btn active">{tag}</button>}
         </div>
         <div className="content-wrapper">
@@ -155,7 +121,7 @@ const Home = () => {
                       </span>
                     </div>
                     <div
-                      className={`article-favorite ${article?.favorited ? "favorited  " : ""}`}
+                      className={`article-favorite ${article?.favorited ? "favorited" : ""}`}
                       onClick={() => handleFavorite(article?.slug)}
                     >
                       {article?.favoritesCount}
@@ -177,7 +143,7 @@ const Home = () => {
 
           <aside className="sidebar">
             <div className="popular-tags">
-              <h3>Popular Tags</h3>
+                <h3>Popular Tags</h3>
               <div className="tags-container">
                 {tags.length > 0 &&
                   tags?.map(
@@ -188,7 +154,6 @@ const Home = () => {
                           onClick={() => {
                             setTag(tag);
                             setPage(1);
-                            setActiveFeed("");
                           }}
                           key={index}
                         >
