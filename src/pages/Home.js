@@ -1,6 +1,7 @@
 import React from "react";
 import "./Home.css";
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom"; //new import
 import axios from "axios";
 import Header from "../pages/Header"; 
 
@@ -12,6 +13,7 @@ const Home = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [activeFeed, setActiveFeed] = useState("global");
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate(); //new import
   const limit = 10;
   const tagLimit = 30;
 
@@ -35,6 +37,8 @@ const Home = () => {
       );
 
       if (response.status === 200) {
+        const sortedArticles = response.data.articles.sort((a, b) => 
+          new Date(b.createdAt) - new Date(a.createdAt));
         setArticles(response.data.articles);
         setTotalPages(Math.ceil(response.data.articlesCount / limit));
       }
@@ -143,9 +147,11 @@ const Home = () => {
               articles?.map((article) => (
                 <article className="article-card" key={article?.slug}>
                   <div className="article-meta">
-                    <img src={article?.author?.image} alt="Author" className="author-image" />
+                  <img src={article?.author?.image} alt="Author" className="author-image"
+                      onClick={() => navigate(`/profiles/${article?.author?.username}`)} />
                     <div className="author-info">
-                      <p>{article?.author?.username}</p>
+                    <p onClick={() => navigate(`/profiles/${article?.author?.username}`)}>
+                    {article?.author?.username}</p>
                       <span>
                         {new Date(article?.createdAt).toLocaleDateString("en-US", {
                           year: "numeric",
