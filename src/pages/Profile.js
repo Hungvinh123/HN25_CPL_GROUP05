@@ -9,6 +9,9 @@ import { getProfile } from "../api"; // new import
 import FollowButton from "./Follow"; // new import
 import Notification from './Notification'; // new import
 import axios from "axios";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 
 const Profile = () => {
   const [user, setUser] = useState(null);
@@ -97,19 +100,20 @@ const Profile = () => {
     try {
       const token = localStorage.getItem("token");
       const updatedUser = { username, bio, image };
-
+  
       const response = await updateUser(token, updatedUser);
       if (response.status === 200) {
         setUser(response.data.user);
-        setError(null);
+        toast.success("Cập nhật thành công! 🎉");
       } else {
-        setError("Cập nhật thất bại!");
+        toast.error("Cập nhật thất bại!");
       }
     } catch (err) {
       console.error("Update failed!", err);
-      setError("Cập nhật thất bại!");
+      toast.error("Cập nhật thất bại!");
     }
   };
+  
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -302,6 +306,7 @@ const Profile = () => {
             </Card>
           </Col>
         </Row>
+        <ToastContainer position="top-center" autoClose={3000} />
     </Container>
     </>
   );
