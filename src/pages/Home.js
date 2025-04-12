@@ -137,9 +137,7 @@ const Home = () => {
                     </div>
                   </div>
                   <div className="article-content">
-                    <h2>{article?.title}</h2>
-                    <p>{article?.description}</p>
-                    <Link
+                  <Link
                       to={`/article/${article.slug}`}
                       style={{
                         color: "#5CB85C",
@@ -147,6 +145,9 @@ const Home = () => {
                         textDecoration: "none",
                       }}
                     >
+                    <h2>{article?.title}</h2>
+                    <p>{article?.description}</p>
+                    
                       Read more...
                     </Link>
                   </div>

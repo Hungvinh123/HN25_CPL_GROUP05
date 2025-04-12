@@ -19,7 +19,7 @@ const Header = () => {
                 <nav className="nav-menu">
                     {isLoggedIn ? (
                         <div className="user-menu">
-                            <Link to={`/home`} className="nav-item">
+                            <Link to={`/`} className="nav-item">
                                 Home
                             </Link>
                             <Link to="/new-article" className="nav-item">
