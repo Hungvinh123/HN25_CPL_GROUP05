@@ -11,6 +11,7 @@ const Home = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const [activeFeed, setActiveFeed] = useState("global");
   const navigate = useNavigate();
   const limit = 10;
   const tagLimit = 30;
@@ -19,7 +20,7 @@ const Home = () => {
     setIsLoading(true);
     try {
       const baseUrl = "https://node-express-conduit.appspot.com/api";
-      const url = `${baseUrl}/articles?limit=${limit}&offset=${(page - 1) * limit}${tag ? `&tag=${tag}` : ""}`;
+      const url = `${baseUrl}/articles?limit=${limit}&page=${page}${tag ? `&tag=${tag}` : ""}`;
       const response = await axios.get(url);
 
       if (response.status === 200) {
@@ -78,10 +79,10 @@ const Home = () => {
         const newArticles = articles.map((article) =>
           article?.slug === slug
             ? {
-              ...article,
-              favorited: !article.favorited,
-              favoritesCount: article.favoritesCount + (article.favorited ? -1 : 1),
-            }
+                ...article,
+                favorited: !article.favorited,
+                favoritesCount: article.favoritesCount + (article.favorited ? -1 : 1),
+              }
             : article
         );
         setArticles(newArticles);
@@ -100,7 +101,16 @@ const Home = () => {
       </div>
       <div className="home-container">
         <div className="feed-navigation">
-          <button className="feed-btn active">Global Feed</button>
+          <button
+            className={`feed-btn ${activeFeed === "global" ? "active" : ""}`}
+            onClick={() => {
+              setActiveFeed("global");
+              setTag("");
+              setPage(1);
+            }}
+          >
+            Global Feed
+          </button>
           {tag && <button className="feed-btn active">{tag}</button>}
         </div>
         <div className="content-wrapper">
@@ -137,7 +147,7 @@ const Home = () => {
                     </div>
                   </div>
                   <div className="article-content">
-                  <Link
+                    <Link
                       to={`/article/${article.slug}`}
                       style={{
                         color: "#5CB85C",
@@ -145,9 +155,8 @@ const Home = () => {
                         textDecoration: "none",
                       }}
                     >
-                    <h2>{article?.title}</h2>
-                    <p>{article?.description}</p>
-                    
+                      <h2>{article?.title}</h2>
+                      <p>{article?.description}</p>
                       Read more...
                     </Link>
                   </div>
@@ -171,6 +180,7 @@ const Home = () => {
                           onClick={() => {
                             setTag(tagItem);
                             setPage(1);
+                            setActiveFeed("");
                           }}
                           key={index}
                         >
