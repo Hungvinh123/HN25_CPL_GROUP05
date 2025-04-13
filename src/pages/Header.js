@@ -1,21 +1,27 @@
 // Header.js
 import React, { useState } from "react";
 import "./Header.css";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+
 const Header = () => {
+    const navigate = useNavigate();
     const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem("token"));
 
     const handleLogout = () => {
         localStorage.removeItem("token");
+        localStorage.removeItem("username");
         setIsLoggedIn(false);
+        navigate("/");
     };
 
     return (
         <header className="header">
             <div className="header-container">
-                <div className="logo">
-                    <h2>conduit</h2>
-                </div>
+                <Link to={`/`} className="nav-item">
+                    <div className="logo">
+                        <h2>conduit</h2>
+                    </div>
+                </Link>
                 <nav className="nav-menu">
                     {isLoggedIn ? (
                         <div className="user-menu">
@@ -29,7 +35,7 @@ const Header = () => {
                                 Your Articles
                             </Link>
                             <Link to={`/profile`} className="nav-item">
-                                {localStorage.getItem("username")}
+                                Profile
                             </Link>
                             <button onClick={handleLogout} className="nav-item logout-btn">
                                 Logout
@@ -37,11 +43,14 @@ const Header = () => {
                         </div>
                     ) : (
                         <div className="auth-menu">
+                            <Link to={`/`} className="nav-item">
+                                Home
+                            </Link>
                             <Link to={`/login`} className="nav-item">
                                 Login
                             </Link>
                             <Link to={`/register`} className="nav-item signup">
-                                Sign Up
+                                Register
                             </Link>
                         </div>
                     )}

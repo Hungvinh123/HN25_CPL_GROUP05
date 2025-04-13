@@ -90,10 +90,10 @@ const ArticleDetail = () => {
             </div>
 
             <div className="article-detail-container">
-                <div className="article-detail-author-info">
-                    <img src={article.author.image} alt={article.author.username} />
+                <div className="article-detail-author-info" >
+                    <img src={article.author.image} alt={article.author.username}  onClick={() => navigate(`/profiles/${article?.author?.username}`)}/>
                     <div>
-                        <strong>{article.author.username}</strong>
+                        <strong  onClick={() => navigate(`/profiles/${article?.author?.username}`)}>{article.author.username}</strong>
                         <p>{new Date(article.createdAt).toDateString()}</p>
                     </div>
                 </div>
@@ -105,23 +105,23 @@ const ArticleDetail = () => {
                 </div>
 
                 <div className="article-detail-comments-section">
-                    <h3>Bình luận</h3>
+                    <h3>Comments</h3>
 
                     {userToken ? (
                         <form onSubmit={handleCommentSubmit} className="article-detail-comment-form">
                             <textarea
                                 value={comment}
                                 onChange={(e) => setComment(e.target.value)}
-                                placeholder="Thêm bình luận..."
+                                placeholder="Add a comment..."
                             />
-                            <button type="submit">Đăng</button>
+                            <button type="submit">Comment</button>
                         </form>
                     ) : (
                         <p className="article-detail-login-prompt">
                             <Link to="/login" state={{ returnUrl: `/article/${slug}` }}>
-                                Đăng nhập
+                                Login
                             </Link>{" "}
-                            để bình luận.
+                            to comment.
                         </p>
                     )}
 
@@ -147,7 +147,7 @@ const ArticleDetail = () => {
                             />
                         ))
                     ) : (
-                        <p className="article-detail-no-comments">Chưa có bình luận nào.</p>
+                        <p className="article-detail-no-comments">No comments yet.</p>
                     )}
                 </div>
             </div>

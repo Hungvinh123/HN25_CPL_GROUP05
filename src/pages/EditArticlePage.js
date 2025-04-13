@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import Header from "../pages/Header";
+import "./EditArticlePage.css";
+
 const EditArticlePage = () => {
   const { slug } = useParams();
   const navigate = useNavigate();
@@ -16,10 +18,12 @@ const EditArticlePage = () => {
   const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
+  // Fetch article data on component mount
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
-      navigate("/login");
+      setError("Please log in to edit articles.");
+      setTimeout(() => navigate("/login"), 2000);
       return;
     }
 
@@ -32,21 +36,22 @@ const EditArticlePage = () => {
         const { title, description, body, tagList } = response.data.article;
         setFormData({
           title,
-          description: description || "", // Nếu API không trả về description, mặc định là chuỗi rỗng
+          description: description || "",
           body,
-          tagList: tagList.join(", "),
+          tagList: tagList?.join(", ") || "",
         });
-        setLoading(false);
       } catch (err) {
-        setError("Không thể tải bài viết. Vui lòng thử lại sau.");
-        setLoading(false);
+        setError("Unable to load article. Please try again later.");
         console.error("Error fetching article:", err);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchArticle();
   }, [slug, navigate]);
 
+  // Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -55,17 +60,19 @@ const EditArticlePage = () => {
     }));
   };
 
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     const token = localStorage.getItem("token");
     if (!token) {
-      navigate("/login");
+      setError("Please log in to update articles.");
+      setTimeout(() => navigate("/login"), 2000);
       return;
     }
 
     if (!formData.title || !formData.body) {
-      setError("Tiêu đề và nội dung không được để trống!");
+      setError("Title and content are required!");
       return;
     }
 
@@ -88,25 +95,24 @@ const EditArticlePage = () => {
           },
         },
         {
-          headers: {
-            Authorization: `Token ${token}`,
-          },
+          headers: { Authorization: `Token ${token}` },
         }
       );
       navigate(`/article/${response.data.article.slug}`);
     } catch (err) {
-      setError("Có lỗi khi cập nhật bài viết. Vui lòng thử lại.");
-      console.error("Error editing article:", err);
+      setError("Failed to update article. Please try again.");
+      console.error("Error updating article:", err);
     } finally {
       setSubmitting(false);
     }
   };
 
+  // Show loading state
   if (loading) {
     return (
       <div className="container text-center mt-5">
         <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Đang tải...</span>
+          <span className="visually-hidden">Loading...</span>
         </div>
       </div>
     );
@@ -115,62 +121,88 @@ const EditArticlePage = () => {
   return (
     <>
       <Header />
-      <div className="container mt-5">
+      <div className="container edit-article-container mt-5">
         <div className="row justify-content-center">
-          <div className="col-md-8">
-            <h2 className="text-center mb-4">Chỉnh sửa bài viết</h2>
-            <form onSubmit={handleSubmit}>
-              <div className="mb-3">
+          <div className="col-md-10 col-lg-8">
+            <h1 className="edit-article-title">Edit Your Article</h1>
+            {error && (
+              <div className="alert alert-danger alert-dismissible fade show" role="alert">
+                <i className="bi bi-exclamation-circle-fill me-2"></i>
+                {error}
+                <button
+                  type="button"
+                  className="btn-close"
+                  onClick={() => setError(null)}
+                  aria-label="Close"
+                ></button>
+              </div>
+            )}
+            <form onSubmit={handleSubmit} className="edit-article-form">
+              <div className="mb-4">
+                <label htmlFor="title" className="form-label">
+                  Article Title
+                </label>
                 <input
                   type="text"
-                  className="form-control"
+                  id="title"
                   name="title"
-                  placeholder="Tiêu đề bài viết"
+                  className="form-control"
+                  placeholder="Enter article title"
                   value={formData.title}
                   onChange={handleChange}
                   required
                 />
               </div>
-              <div className="mb-3">
+              <div className="mb-4">
+                <label htmlFor="description" className="form-label">
+                  Short Description
+                </label>
                 <input
                   type="text"
-                  className="form-control"
+                  id="description"
                   name="description"
-                  placeholder="Mô tả bài viết"
+                  className="form-control"
+                  placeholder="Write a brief description"
                   value={formData.description}
                   onChange={handleChange}
                 />
               </div>
-              <div className="mb-3">
+              <div className="mb-4">
+                <label htmlFor="body" className="form-label">
+                  Content
+                </label>
                 <textarea
-                  className="form-control"
+                  id="body"
                   name="body"
-                  rows="8"
-                  placeholder="Nội dung bài viết"
+                  className="form-control"
+                  rows="10"
+                  placeholder="Write your article content here"
                   value={formData.body}
                   onChange={handleChange}
                   required
                 />
               </div>
-              <div className="mb-3">
+              <div className="mb-4">
+                <label htmlFor="tagList" className="form-label">
+                  Tags
+                </label>
                 <input
                   type="text"
-                  className="form-control"
+                  id="tagList"
                   name="tagList"
-                  placeholder="Thẻ (cách nhau bằng dấu phẩy)"
+                  className="form-control"
+                  placeholder="Enter tags (separated by commas)"
                   value={formData.tagList}
                   onChange={handleChange}
                 />
+                <small className="form-text text-muted">
+                  Example: technology, coding, react
+                </small>
               </div>
-              {error && (
-                <div className="alert alert-danger" role="alert">
-                  {error}
-                </div>
-              )}
               <div className="text-end">
                 <button
                   type="submit"
-                  className="btn btn-success"
+                  className="btn btn-primary btn-lg"
                   disabled={submitting}
                 >
                   {submitting ? (
@@ -180,10 +212,10 @@ const EditArticlePage = () => {
                         role="status"
                         aria-hidden="true"
                       ></span>
-                      Đang cập nhật...
+                      Updating...
                     </>
                   ) : (
-                    "Cập nhật bài viết"
+                    "Update Article"
                   )}
                 </button>
               </div>

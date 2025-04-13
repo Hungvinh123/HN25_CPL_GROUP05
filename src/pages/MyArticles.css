@@ -1,92 +1,97 @@
-/* MyArticles.css */
+/* Styling for article cards */
 .article-card {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border: none;
-    border-radius: 0.5rem;
-    background: #fff;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border: none;
+  border-radius: 0.5rem;
+  background: #fff;
+}
+
+.article-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Card title styling */
+.card-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.card-title a:hover {
+  color: #0d6efd !important; /* Bootstrap primary color */
+}
+
+/* Card text styling */
+.card-text {
+  font-size: 1rem;
+  color: #333;
+}
+
+/* Badge styling for tags */
+.badge {
+  font-size: 0.75rem;
+  padding: 0.35em 0.65em;
+  border-radius: 0.25rem;
+}
+
+/* Small button styling */
+.btn-sm {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.875rem;
+}
+
+/* Modal styling */
+.modal-content {
+  border-radius: 0.5rem;
+}
+
+.modal-title {
+  font-size: 1.25rem;
+}
+
+/* Fixed alert positioning */
+.fixed-alert {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1050;
+  min-width: 300px;
+  max-width: 400px;
+  border-radius: 0.5rem;
+  animation: fadeInOut 0.3s ease-in;
+}
+
+/* Fade-in animation for alerts */
+@keyframes fadeInOut {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px);
   }
-  
-  .article-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1) !important;
+  100% {
+    opacity: 1;
+    transform: translateY(0);
   }
-  
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
   .card-title {
-    font-size: 1.5rem;
-    font-weight: 600;
-  }
-  
-  .card-title a:hover {
-    color: #0d6efd !important; /* Bootstrap primary color */
-  }
-  
-  .card-text {
-    font-size: 1rem;
-    color: #333;
-  }
-  
-  .badge {
-    font-size: 0.75rem;
-    padding: 0.35em 0.65em;
-    border-radius: 0.25rem;
-  }
-  
-  .btn-sm {
-    padding: 0.4rem 0.8rem;
-    font-size: 0.875rem;
-  }
-  
-  .modal-content {
-    border-radius: 0.5rem;
-  }
-  
-  .modal-title {
     font-size: 1.25rem;
   }
-  
-  /* Cố định alert ở góc trên cùng */
+
+  .card-text {
+    font-size: 0.9rem;
+  }
+
+  .article-card {
+    margin-bottom: 1.5rem;
+  }
+
   .fixed-alert {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 1050;
-    min-width: 300px;
-    max-width: 400px;
-    border-radius: 0.5rem;
-    animation: fadeInOut 0.3s ease-in;
+    top: 10px;
+    right: 10px;
+    left: 10px;
+    margin: 0 auto;
+    max-width: 90%;
   }
-  
-  /* Animation cho alert */
-  @keyframes fadeInOut {
-    0% {
-      opacity: 0;
-      transform: translateY(-20px);
-    }
-    100% {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-  
-  /* Responsive adjustments */
-  @media (max-width: 768px) {
-    .card-title {
-      font-size: 1.25rem;
-    }
-  
-    .card-text {
-      font-size: 0.9rem;
-    }
-  
-    .article-card {
-      margin-bottom: 1.5rem;
-    }
-  
-    .fixed-alert {
-      top: 10px;
-      right: 10px;
-      left: 10px;
-      margin: 0 auto;
-      max-width: 90%;
-    }
-  }
+}
