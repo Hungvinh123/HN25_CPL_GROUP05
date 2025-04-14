@@ -27,6 +27,7 @@ const Profile = () => {
   const [articles, setArticles] = useState([]);
   const [articlesLoading, setArticlesLoading] = useState(false);
 
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { username: profileUsername } = useParams(); //new import
 
@@ -60,6 +61,7 @@ const Profile = () => {
   // Fetch user data on mount
   useEffect(() => {
     const fetchUser = async () => {
+      setIsLoading(true);
       const token = localStorage.getItem("token");
       if (!token) {
         setIsLoggedIn(false);
@@ -89,6 +91,8 @@ const Profile = () => {
         setError("Không thể tải thông tin người dùng");
         setIsLoggedIn(false);
         localStorage.removeItem("token");
+      }finally {
+        setIsLoading(false);
       }
     };
     fetchUser();
@@ -132,9 +136,18 @@ const Profile = () => {
     );
   }
 
-  
- 
+  if (isLoading) {
+    return (
+      <>
+        <Header />
+        <Container fluid className="profile-page py-5 mt-5">
+          <div className="text-center">Loading...</div>
+        </Container>
+      </>
+    );
+  }
 
+  
   return (
     <>
     <Header />
@@ -185,7 +198,7 @@ const Profile = () => {
                 className="mt-2 d-block"
                 onClick={handleLogout}
               >
-                Đăng xuất
+                Log out
               </Button>
               </>
               )}
@@ -257,11 +270,13 @@ const Profile = () => {
           <Col md={11}>
             <Card className="articles-card">
               <Card.Body>
-                <h4 className="mb-4">Bài viết gần đây</h4>
+                <h4 className="mb-4">Most Recent Articles</h4>
                 {articlesLoading ? (
-                  <div className="text-center">Đang tải bài viết...</div>
+                  <div className="text-center">Loading articles...</div>
                 ) : articles.length > 0 ? (
-                  articles.map(article => (
+                  articles
+                  .slice(0, isOwnProfile ? articles.length : 3)
+                  .map(article => (
                     <div key={article.slug} className="mb-4 article-item">
                       <div className="d-flex justify-content-between align-items-start">
                         <div>

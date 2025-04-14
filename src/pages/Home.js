@@ -20,8 +20,21 @@ const Home = () => {
     setIsLoading(true);
     try {
       const baseUrl = "https://node-express-conduit.appspot.com/api";
-      const url = `${baseUrl}/articles?limit=${limit}&page=${page}${tag ? `&tag=${tag}` : ""}`;
-      const response = await axios.get(url);
+      const feedPath = activeFeed === "your" ? "/feed" : "";
+      const url = `${baseUrl}/articles${feedPath}?limit=${limit}&page=${page}${tag ? `&tag=${tag}` : ""}`;
+      
+    const config = {};
+    if (activeFeed === "your") {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("Please login to view your feed");
+        navigate("/login");
+        return;
+      }
+      config.headers = { Authorization: `Token ${token}` };
+    }
+
+    const response = await axios.get(url, config);
 
       if (response.status === 200) {
         const sortedArticles = response.data.articles.sort(
@@ -57,7 +70,7 @@ const Home = () => {
   useEffect(() => {
     setTotalPages(0);
     getArticles();
-  }, [tag, page]);
+  }, [tag, page, activeFeed]);
 
   const handleFavorite = async (slug) => {
     try {
@@ -101,6 +114,17 @@ const Home = () => {
       </div>
       <div className="home-container">
         <div className="feed-navigation">
+        <button
+      className={`feed-btn ${activeFeed === "your" ? "active" : ""}`}
+      onClick={() => {
+        setActiveFeed("your");
+        setTag("");
+        setPage(1);
+      }}
+      disabled={!localStorage.getItem("token")}
+    >
+      Followed by You
+    </button>
           <button
             className={`feed-btn ${activeFeed === "global" ? "active" : ""}`}
             onClick={() => {
@@ -180,7 +204,7 @@ const Home = () => {
                           onClick={() => {
                             setTag(tagItem);
                             setPage(1);
-                            setActiveFeed("");
+                            setActiveFeed("global");
                           }}
                           key={index}
                         >

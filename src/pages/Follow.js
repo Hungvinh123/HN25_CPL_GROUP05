@@ -22,12 +22,12 @@ const FollowButton = ({
           followersCount: prev.followersCount + 1
         }));
         setNotification({
-            message: `Đang theo dõi ${profile.username}`,
+            message: `Following ${profile.username}`,
             type: 'success'
           });      
         } catch (err) {
         console.error("Follow failed!", err);
-        setError("Theo dõi thất bại!");
+        setError("Fail to follow!");
       }
     };
   
@@ -42,12 +42,12 @@ const FollowButton = ({
           followersCount: prev.followersCount - 1
         }));
         setNotification({
-            message: `Đã bỏ theo dõi ${profile.username}`,
+            message: `Unfollow ${profile.username}`,
             type: 'error'
           });      
         } catch (err) {
         console.error("Unfollow failed!", err);
-        setError("Bỏ theo dõi thất bại!");
+        setError("Fail to unfollow!");
       }
     };
   
@@ -59,7 +59,7 @@ const FollowButton = ({
             size="sm"
             onClick={handleUnfollow}
           >
-            Bỏ theo dõi
+            Unfollow
           </Button>
         ) : (
           <Button
@@ -67,7 +67,7 @@ const FollowButton = ({
             size="sm"
             onClick={handleFollow}
           >
-            Theo dõi
+            Follow
           </Button>
         )}
       </div>
